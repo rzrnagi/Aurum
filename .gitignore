@@ -1,0 +1,24 @@
+# Project planning docs
+*.docx
+*.doc
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+.next/
+
+# MLflow
+mlruns/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
