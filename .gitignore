@@ -21,6 +21,10 @@ mlflow.db
 # Model checkpoints
 checkpoints/
 
+# Lightning logs
+lightning_logs/
+**/lightning_logs/
+
 # Docker
 *.log
 
