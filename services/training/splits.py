@@ -1,5 +1,5 @@
 import pandas as pd
-from config import TRAIN_END, VAL_END, FEATURE_COLS
+from config import TRAIN_START, TRAIN_END, VAL_END, FEATURE_COLS
 
 
 def make_splits(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -15,7 +15,7 @@ def make_splits(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFr
     # Drop last row (no target) and any remaining NaNs in features or target
     df = df.dropna(subset=FEATURE_COLS + ["target"])
 
-    train = df[df["date"] < TRAIN_END].copy()
+    train = df[(df["date"] >= TRAIN_START) & (df["date"] < TRAIN_END)].copy()
     val = df[(df["date"] >= TRAIN_END) & (df["date"] < VAL_END)].copy()
     test = df[df["date"] >= VAL_END].copy()
 

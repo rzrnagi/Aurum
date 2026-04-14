@@ -15,19 +15,21 @@ from config import FEATURE_COLS
 log = logging.getLogger(__name__)
 
 PARAMS = {
-    "n_estimators": 500,
-    "learning_rate": 0.05,
-    "max_depth": 6,
-    "num_leaves": 31,
+    "n_estimators": 300,
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "num_leaves": 15,
+    "min_child_samples": 50,
     "subsample": 0.8,
     "colsample_bytree": 0.8,
+    "reg_lambda": 1.0,
     "objective": "regression",
     "verbose": -1,
 }
 
 
-def _arrays(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-    return df[FEATURE_COLS].astype(float).values, df["target"].astype(float).values
+def _xy(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
+    return df[FEATURE_COLS].astype(float), df["target"].astype(float).values
 
 
 def train_lgbm(
@@ -36,19 +38,15 @@ def train_lgbm(
     test: pd.DataFrame,
     run_name: str = "LightGBM",
 ) -> dict:
-    X_train, y_train = _arrays(train)
-    X_val, y_val = _arrays(val)
-    X_test, y_test = _arrays(test)
+    X_train, y_train = _xy(train)
+    X_val, y_val = _xy(val)
+    X_test, y_test = _xy(test)
 
     with mlflow.start_run(run_name=run_name):
         mlflow.log_params({**PARAMS, "model": run_name, "n_features": len(FEATURE_COLS)})
 
         model = lgb.LGBMRegressor(**PARAMS)
-        model.fit(
-            X_train, y_train,
-            eval_set=[(X_val, y_val)],
-            callbacks=[lgb.early_stopping(50, verbose=False), lgb.log_evaluation(0)],
-        )
+        model.fit(X_train, y_train, callbacks=[lgb.log_evaluation(0)])
 
         val_pred = model.predict(X_val)
         test_pred = model.predict(X_test)
@@ -60,7 +58,6 @@ def train_lgbm(
             "test_mae": mae(y_test, test_pred),
             "test_rmse": rmse(y_test, test_pred),
             "test_direction_acc": direction_accuracy(y_test, test_pred),
-            "best_iteration": model.best_iteration_,
         }
         mlflow.log_metrics(results)
 
@@ -77,8 +74,7 @@ def train_lgbm(
             f"{run_name}  val_mae={results['val_mae']:.5f}  "
             f"val_dir={results['val_direction_acc']:.3f}  "
             f"test_mae={results['test_mae']:.5f}  "
-            f"test_dir={results['test_direction_acc']:.3f}  "
-            f"best_iter={results['best_iteration']}"
+            f"test_dir={results['test_direction_acc']:.3f}"
         )
 
     return results

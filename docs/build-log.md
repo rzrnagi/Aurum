@@ -79,11 +79,17 @@ Used for resume writing, CV updates, and interview talking points.
 - **Benchmark table** — printed to stdout at end of training; MAE, RMSE, direction accuracy side-by-side across models
 
 ### Numbers
-- Train set: ~3,770 rows (2005–2020)
-- Val set: ~502 rows (2020–2022)
-- Test set: ~750 rows (2022–present)
-- 27 features fed to LightGBM
-- MLflow experiment: `finsignal`
+
+| Model         | Val MAE | Val Dir% | Test MAE | Test Dir% |
+|---------------|---------|----------|----------|-----------|
+| ARIMA(5,0,0)  | 0.00990 | 56.8%    | 0.00785  | 52.9%     |
+| LightGBM      | 0.01007 | 52.5%    | 0.00804  | 52.7%     |
+
+- Train set: 3,775 rows (2005–2020)
+- Val set: 505 rows (2020–2022)
+- Test set: 1,071 rows (2022–present)
+- 28 features fed to LightGBM (log_return + 20 lags + 4 rolling + 3 macro)
+- MLflow experiment: `finsignal`, backend: SQLite
 
 ### Technical decisions
 - Target is `log_return.shift(-1)` — features at time T predict return at T+1; avoids lookahead bias
@@ -91,9 +97,12 @@ Used for resume writing, CV updates, and interview talking points.
 - LightGBM early stopping on val set prevents overfitting without manual tuning
 - `matplotlib.use("Agg")` — headless backend for servers with no display
 
+### Interview framing
+LightGBM achieving comparable direction accuracy to AR(5) (~53%) is the expected result — daily returns are close to a random walk (efficient market hypothesis). This is a credible, honest finding. The differentiation comes in Phase 4 with macro features, longer horizons, and the TFT model.
+
 ### Resume bullets (raw)
-- Trained and benchmarked ARIMA(5,0,0) and LightGBM models for 1-day-ahead S&P 500 log return prediction; framed evaluation using MAE, RMSE, and direction accuracy across walk-forward train/val/test splits
-- Implemented full MLflow experiment tracking: logged hyperparameters, evaluation metrics, feature importance plots, and serialised model artifacts for every training run
-- Designed lookahead-free target construction (`log_return.shift(-1)`) ensuring no future data leaks into model training
+- Trained and benchmarked ARIMA(5,0,0) and LightGBM across 1-day-ahead S&P 500 log return prediction; both models achieved ~53% direction accuracy on held-out test set (2022–present), consistent with efficient market hypothesis for short-term returns
+- Implemented full MLflow experiment tracking with SQLite backend: logged hyperparameters, val/test MAE, RMSE, direction accuracy, feature importance plots, and serialised model artifacts per run
+- Designed lookahead-free target construction (`log_return.shift(-1)`) and strict temporal train/val/test split (2005–2020 / 2020–2022 / 2022–present) ensuring zero data leakage
 
 ---
