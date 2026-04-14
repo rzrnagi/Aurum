@@ -1,6 +1,5 @@
 import logging
 from datetime import date
-import pandas as pd
 from sqlalchemy import create_engine, text
 from fetcher import fetch_headlines
 from scorer import score_headlines

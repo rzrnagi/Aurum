@@ -4,7 +4,6 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import DATABASE_URL
 from db import get_latest_features, log_prediction
 from model_loader import load_model, get_run_metrics
 from cache import get_cached, set_cached

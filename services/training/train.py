@@ -2,7 +2,7 @@ import logging
 
 import mlflow
 
-from config import MLFLOW_TRACKING_URI, FEATURE_COLS
+from config import MLFLOW_TRACKING_URI
 from db import load_feature_store
 from splits import make_splits
 from models.arima import train_arima
@@ -53,7 +53,6 @@ def main() -> None:
     has_sentiment = df["sentiment_score"].notna().sum() > 100
     if has_sentiment:
         log.info("Training LightGBM + Sentiment...")
-        sentiment_cols = FEATURE_COLS + ["sentiment_score"]
         results["LightGBM+Sentiment"] = train_lgbm(
             train, val, test, run_name="LightGBM+Sentiment", extra_features=["sentiment_score"]
         )

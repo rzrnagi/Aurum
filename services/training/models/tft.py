@@ -8,13 +8,10 @@ import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import pandas as pd
-import torch
 from pytorch_forecasting import TemporalFusionTransformer, TimeSeriesDataSet
-from pytorch_forecasting.data import GroupNormalizer, EncoderNormalizer
 from pytorch_forecasting.metrics import MAE as TFT_MAE
 
 from metrics import mae, rmse, direction_accuracy
-from config import FEATURE_COLS
 
 log = logging.getLogger(__name__)
 
