@@ -15,6 +15,7 @@ def compute_features() -> pd.DataFrame:
     t10y2y = _to_df(load_series("T10Y2Y"), "yield_spread")
 
     df = gspc.copy()
+    df["close"] = df["close"].astype(float)
     df["log_return"] = np.log(df["close"] / df["close"].shift(1))
 
     for i in range(1, N_LAGS + 1):
