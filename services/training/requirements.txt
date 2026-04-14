@@ -8,3 +8,6 @@ psycopg2-binary
 sqlalchemy
 python-dotenv
 matplotlib
+torch
+pytorch-forecasting
+lightning

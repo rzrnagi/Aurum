@@ -1,0 +1,6 @@
+finnhub-python
+transformers
+torch
+psycopg2-binary
+sqlalchemy
+python-dotenv

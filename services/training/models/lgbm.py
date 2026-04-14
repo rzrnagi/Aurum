@@ -28,16 +28,23 @@ PARAMS = {
 }
 
 
-def _xy(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
-    return df[FEATURE_COLS].astype(float), df["target"].astype(float).values
-
-
 def train_lgbm(
     train: pd.DataFrame,
     val: pd.DataFrame,
     test: pd.DataFrame,
     run_name: str = "LightGBM",
+    extra_features: list[str] | None = None,
 ) -> dict:
+    cols = FEATURE_COLS + (extra_features or [])
+    # For sentiment variant, drop rows where extra features are null
+    if extra_features:
+        train = train.dropna(subset=extra_features)
+        val = val.dropna(subset=extra_features)
+        test = test.dropna(subset=extra_features)
+
+    def _xy(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
+        return df[cols].astype(float), df["target"].astype(float).values
+
     X_train, y_train = _xy(train)
     X_val, y_val = _xy(val)
     X_test, y_test = _xy(test)

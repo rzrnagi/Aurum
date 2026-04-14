@@ -106,3 +106,27 @@ LightGBM achieving comparable direction accuracy to AR(5) (~53%) is the expected
 - Designed lookahead-free target construction (`log_return.shift(-1)`) and strict temporal train/val/test split (2005–2020 / 2020–2022 / 2022–present) ensuring zero data leakage
 
 ---
+
+## Phase 4 — TFT, Sentiment Pipeline, ADR-001
+
+**Date:** April 2026
+
+### What was built
+- **Temporal Fusion Transformer** (`services/training/models/tft.py`) — multi-horizon forecasting (1, 5, 21-day) using pytorch-forecasting; 63-day encoder window; attention weight interpretation plot logged to MLflow
+- **Sentiment service** (`services/sentiment/`) — fetches S&P 500 news headlines from Finnhub API, scores with FinBERT (`ProsusAI/finbert`), stores confidence-weighted sentiment score per trading day
+- **Migration 003** — adds `sentiment_score` column to `feature_store`
+- **LightGBM + Sentiment variant** — trains on rows with non-null sentiment score; ablation quantifies sentiment feature contribution
+- **ADR-001** (`docs/adr/001-model-selection.md`) — documents why TFT over LSTM, why ARIMA is kept as baseline, trade-offs considered
+
+### Architecture decisions
+- TFT hidden_size=32, 2 attention heads — intentionally small for CPU training; GPU would scale to hidden_size=128+
+- Sentiment stored in feature_store, not a separate table — keeps training queries simple; one join instead of two
+- Finnhub free tier provides ~1-2 years of historical headlines; NULL sentinel on older dates; LightGBM+Sentiment trains only on non-null rows
+- LSTM explicitly excluded (ADR-001) — TFT strictly dominates, showing deliberate engineering judgment
+
+### Resume bullets (raw)
+- Implemented Temporal Fusion Transformer for multi-horizon (1/5/21-day) S&P 500 return forecasting using pytorch-forecasting; logged attention weight interpretation plots to MLflow demonstrating model interpretability
+- Built end-to-end sentiment pipeline: Finnhub API news ingestion → FinBERT (`ProsusAI/finbert`) confidence-weighted scoring → PostgreSQL feature store; integrated as engineered feature in LightGBM ablation study
+- Authored ADR-001 documenting model selection rationale (TFT over LSTM, ARIMA as baseline), demonstrating engineering decision-making aligned with production ML standards
+
+---
