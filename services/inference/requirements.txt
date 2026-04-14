@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+redis
+psycopg2-binary
+sqlalchemy
+mlflow
+lightgbm
+python-dotenv

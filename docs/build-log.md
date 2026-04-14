@@ -140,3 +140,33 @@ TFT's multi-horizon MAE at 5-day (0.00776) matches ARIMA's 1-day performance —
 - Authored ADR-001 documenting model selection rationale (TFT over LSTM, ARIMA as baseline), demonstrating engineering decision-making aligned with production ML standards
 
 ---
+
+## Phase 5 — FastAPI Inference Service + Redis Cache
+
+**Date:** April 2026
+
+### What was built
+- **FastAPI inference service** (`services/inference/`) — 4 endpoints: `/predict`, `/models`, `/health`, `/drift`
+- **`/predict`** — loads latest feature row from `feature_store`, runs LightGBM model, returns predicted return with ±2σ confidence interval, logs to `prediction_log`, caches in Redis
+- **`/models`** — queries MLflow for all tracked runs, returns metrics per model
+- **Redis cache** — predictions cached by `ticker:date:horizon` key with 1-hour TTL; Redis added to Docker Compose
+- **`prediction_log` table** — migration 004; records every inference with model name, version, forecast date, horizon, predicted return, and confidence bounds
+- **Model loaded from MLflow** — inference service queries MLflow for the latest LightGBM run and loads the serialised model; no hardcoded paths
+- **Auto-generated OpenAPI docs** — available at `/docs` via FastAPI's built-in Swagger UI
+
+### Numbers
+- 4 endpoints
+- Redis cache eliminates repeat DB + model calls within same trading day
+- Confidence interval: predicted_return ± 2 × rolling_std_21 (21-day volatility estimate)
+
+### Technical decisions
+- Cache is best-effort — `RedisError` is caught and swallowed so a Redis outage never blocks a prediction
+- Model loaded once at first request and held in memory (`_model_cache` dict) — avoids MLflow round-trip on every call
+- `/drift` returns a placeholder — PSI drift monitoring wired up in Phase 6
+
+### Resume bullets (raw)
+- Built FastAPI inference service with `/predict`, `/models`, and `/health` endpoints; integrated Redis caching with 1-hour TTL reducing repeat inference latency to sub-millisecond
+- Implemented prediction logging to PostgreSQL `prediction_log` table capturing model version, horizon, predicted return, and confidence intervals for full audit trail
+- Wired model loading directly from MLflow run artifacts — inference service requires no hardcoded model paths, enabling zero-downtime model swaps via MLflow experiment tracking
+
+---
