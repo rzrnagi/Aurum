@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+prometheus_client
+psycopg2-binary
+sqlalchemy
+numpy
+pandas
+python-dotenv

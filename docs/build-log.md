@@ -170,3 +170,33 @@ TFT's multi-horizon MAE at 5-day (0.00776) matches ARIMA's 1-day performance —
 - Wired model loading directly from MLflow run artifacts — inference service requires no hardcoded model paths, enabling zero-downtime model swaps via MLflow experiment tracking
 
 ---
+
+## Phase 6 — Drift Monitoring, Prometheus, Grafana, ADR-002
+
+**Date:** April 2026
+
+### What was built
+- **Drift monitoring service** (`services/drift/`) — FastAPI app computing PSI per feature; runs on startup and every hour; exposes `/metrics`, `/status`, `/run`
+- **PSI implementation** — percentile-binned Population Stability Index comparing reference window (2005–2020 training data) against current window (last 63 trading days)
+- **`drift_log` table** — migration 005; records every PSI check with feature name, score, window dates, and alert flag
+- **Prometheus integration** — `finsignal_psi_score` and `finsignal_drift_alert` gauges per feature; Prometheus added to Docker Compose, scrapes drift service every 30s
+- **Grafana** — added to Docker Compose (port 3000); connects to Prometheus as data source
+- **ADR-002** (`docs/adr/002-schema-design.md`) — documents why feature_store is denormalized, why macro series share the equity table, and prediction_log design rationale
+
+### Numbers
+- 6 features monitored: log_return, vix, yield_spread, dexcaus, rolling_std_21, rolling_mean_21
+- PSI thresholds: 0.1 warning, 0.2 alert (industry standard)
+- Reference window: 3,775 rows (2005–2020 training set)
+- Current window: 63 trading days (~3 months)
+
+### Technical decisions
+- PSI bins derived from reference distribution percentiles — robust to outliers vs fixed-width bins
+- Drift check runs async in background; FastAPI stays responsive during computation
+- `host.docker.internal` in prometheus.yml — Prometheus container scrapes drift service running on host
+
+### Resume bullets (raw)
+- Implemented PSI-based feature drift monitoring across 6 key features; exposed Prometheus metrics (`finsignal_psi_score`, `finsignal_drift_alert`) scraped every 30s; visualised in Grafana
+- Designed drift_log schema capturing reference/current window dates and alert flags, enabling retrospective drift analysis
+- Authored ADR-002 documenting schema design trade-offs (denormalized feature_store, unified raw_market_data for equity and macro series)
+
+---
