@@ -18,6 +18,9 @@ node_modules/
 mlruns/
 mlflow.db
 
+# Model checkpoints
+checkpoints/
+
 # Docker
 *.log
 
