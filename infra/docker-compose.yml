@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: finsignal
       POSTGRES_USER: finsignal
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: finsignal
     ports:
       - "5433:5432"
     volumes:

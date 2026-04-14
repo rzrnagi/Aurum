@@ -8,7 +8,7 @@ fred = Fred(api_key=FRED_API_KEY)
 
 def fetch_yfinance(ticker: str, start: str) -> list[dict]:
     """Download OHLCV data for a yfinance ticker from start date to today."""
-    df = yf.download(ticker, start=start, auto_adjust=True, progress=False)
+    df = yf.download(ticker, start=start, auto_adjust=True, progress=False, silent=True)
     if df.empty:
         return []
 
@@ -35,7 +35,11 @@ def fetch_yfinance(ticker: str, start: str) -> list[dict]:
 
 def fetch_fred(series_id: str, start: str) -> list[dict]:
     """Download a FRED series from start date. Value stored in close column."""
-    series = fred.get_series(series_id, observation_start=start).dropna()
+    try:
+        series = fred.get_series(series_id, observation_start=start).dropna()
+    except ValueError:
+        # FRED returns 500 when queried for a date range with no observations
+        return []
     return [
         {
             "ticker": series_id,

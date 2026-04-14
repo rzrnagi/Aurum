@@ -1,4 +1,4 @@
-yfinance==0.2.40
+yfinance==1.2.2
 fredapi==0.5.2
 confluent-kafka==2.4.0
 psycopg2-binary==2.9.9
