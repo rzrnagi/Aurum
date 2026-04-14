@@ -14,15 +14,17 @@ log = logging.getLogger(__name__)
 
 
 def print_benchmark(results: dict[str, dict]) -> None:
-    header = f"{'Model':<25} {'Val MAE':>10} {'Val Dir%':>10} {'Test MAE':>10} {'Test Dir%':>10}"
+    header = f"{'Model':<25} {'Val MAE':>10} {'Val Dir%':>10} {'1d MAE':>10} {'1d Dir%':>10} {'5d MAE':>10} {'21d MAE':>10}"
     log.info("\n" + header)
     log.info("-" * len(header))
     for name, r in results.items():
-        val_mae = f"{r['val_mae']:.5f}" if "val_mae" in r else "  N/A  "
-        val_dir = f"{r['val_direction_acc']*100:.1f}%" if "val_direction_acc" in r else "  N/A  "
-        test_mae = f"{r.get('test_mae', r.get('h1_mae', 0)):.5f}"
-        test_dir = f"{r.get('test_direction_acc', r.get('h1_direction_acc', 0))*100:.1f}%"
-        log.info(f"{name:<25} {val_mae:>10} {val_dir:>10} {test_mae:>10} {test_dir:>10}")
+        val_mae  = f"{r['val_mae']:.5f}"              if "val_mae"              in r else "   —   "
+        val_dir  = f"{r['val_direction_acc']*100:.1f}%" if "val_direction_acc"  in r else "   —   "
+        mae_1d   = f"{r.get('test_mae', r.get('h1_mae', float('nan'))):.5f}"
+        dir_1d   = f"{r.get('test_direction_acc', r.get('h1_direction_acc', float('nan')))*100:.1f}%"
+        mae_5d   = f"{r['h5_mae']:.5f}"  if "h5_mae"  in r else "   —   "
+        mae_21d  = f"{r['h21_mae']:.5f}" if "h21_mae" in r else "   —   "
+        log.info(f"{name:<25} {val_mae:>10} {val_dir:>10} {mae_1d:>10} {dir_1d:>10} {mae_5d:>10} {mae_21d:>10}")
 
 
 def main() -> None:
