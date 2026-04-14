@@ -200,3 +200,32 @@ TFT's multi-horizon MAE at 5-day (0.00776) matches ARIMA's 1-day performance —
 - Authored ADR-002 documenting schema design trade-offs (denormalized feature_store, unified raw_market_data for equity and macro series)
 
 ---
+
+## Phase 7 — Next.js Frontend Dashboard
+
+**Date:** April 2026
+
+### What was built
+- **Next.js 14 frontend** (`frontend/`) — TypeScript, Tailwind CSS, Recharts; single-page dashboard with three panels
+- **Forecast chart** — fetches `/predict` at 1d, 5d, 21d horizons; plots predicted return % with CI upper/lower bands using Recharts LineChart
+- **Model leaderboard** — fetches `/models`; renders MAE, RMSE, direction accuracy per MLflow-tracked run in a sortable table
+- **Drift panel** — fetches `/status` from drift service; visualises PSI per feature as a progress bar with colour-coded status badges (OK / WARNING / ALERT); manual refresh button
+- **Proxy rewrites** — Next.js `rewrites()` config proxies `/api/inference/*` → `localhost:8000` and `/api/drift/*` → `localhost:8001`, eliminating CORS issues
+- **Dark UI** — slate-900 background, consistent with financial terminal aesthetic
+
+### Numbers
+- 3 components, 1 page
+- First Load JS: 202 kB (Recharts is the dominant chunk)
+- Dev server: port 3001
+
+### Technical decisions
+- Next.js 14 (not 15/16) — pinned to match Node 18 environment; latest Next.js requires Node >=20
+- Proxy rewrites instead of CORS headers — keeps backend services unchanged; all cross-origin calls go through the Next.js dev server
+- `"use client"` on all data-fetching components — all panels are interactive (refresh, state); no benefit to RSC here
+
+### Resume bullets (raw)
+- Built a Next.js 14 + TypeScript + Tailwind dashboard surfacing live model predictions, MLflow experiment leaderboard, and PSI drift alerts across 6 features
+- Implemented multi-horizon forecast visualisation (1/5/21-day) with confidence interval bands using Recharts; colour-coded PSI progress bars with OK/WARNING/ALERT thresholds
+- Configured Next.js proxy rewrites to forward API calls to FastAPI inference and drift services, eliminating CORS configuration on backend services
+
+---

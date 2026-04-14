@@ -1,6 +1,6 @@
-yfinance==1.2.2
-fredapi==0.5.2
-confluent-kafka==2.4.0
-psycopg2-binary==2.9.9
-sqlalchemy==2.0.30
-python-dotenv==1.0.1
+yfinance
+fredapi
+confluent-kafka
+psycopg2-binary
+sqlalchemy
+python-dotenv
