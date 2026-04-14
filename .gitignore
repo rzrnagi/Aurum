@@ -16,6 +16,7 @@ node_modules/
 
 # MLflow
 mlruns/
+mlflow.db
 
 # Docker
 *.log

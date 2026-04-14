@@ -65,3 +65,35 @@ Used for resume writing, CV updates, and interview talking points.
 - Implemented idempotent upsert pattern with `ON CONFLICT DO UPDATE` ensuring feature store stays consistent after incremental raw data ingests
 
 ---
+
+## Phase 3 — Model Training & MLflow Tracking
+
+**Date:** April 2026
+
+### What was built
+- **Training microservice** (`services/training/`) — loads feature store, splits data, trains models, logs everything to MLflow
+- **ARIMA(5,0,0) baseline** — classical AR model on log return series; fits on train, forecasts val and test; establishes statistical baseline
+- **LightGBM model** — gradient boosting on all 27 engineered features; early stopping on val set; feature importance logged as artifact
+- **Train/val/test split** — train 2005–2020, val 2020–2022, test 2022–present; target is next-day log return (`log_return.shift(-1)`)
+- **MLflow experiment tracking** — every run logs params, val/test MAE, RMSE, direction accuracy; LightGBM also logs feature importance plot and serialised model artifact
+- **Benchmark table** — printed to stdout at end of training; MAE, RMSE, direction accuracy side-by-side across models
+
+### Numbers
+- Train set: ~3,770 rows (2005–2020)
+- Val set: ~502 rows (2020–2022)
+- Test set: ~750 rows (2022–present)
+- 27 features fed to LightGBM
+- MLflow experiment: `finsignal`
+
+### Technical decisions
+- Target is `log_return.shift(-1)` — features at time T predict return at T+1; avoids lookahead bias
+- ARIMA uses the raw log return series (not engineered features) — correct for a statistical baseline, shows understanding of when classical models apply
+- LightGBM early stopping on val set prevents overfitting without manual tuning
+- `matplotlib.use("Agg")` — headless backend for servers with no display
+
+### Resume bullets (raw)
+- Trained and benchmarked ARIMA(5,0,0) and LightGBM models for 1-day-ahead S&P 500 log return prediction; framed evaluation using MAE, RMSE, and direction accuracy across walk-forward train/val/test splits
+- Implemented full MLflow experiment tracking: logged hyperparameters, evaluation metrics, feature importance plots, and serialised model artifacts for every training run
+- Designed lookahead-free target construction (`log_return.shift(-1)`) ensuring no future data leaks into model training
+
+---
